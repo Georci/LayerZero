@@ -5,7 +5,6 @@ pragma solidity ^0.8.22;
 import "forge-std/console.sol";
 import "forge-std/Script.sol";
 
-
 import {Script} from "forge-std/Script.sol";
 import "../../src/BeBopOFT.sol";
 import {ILayerZeroEndpointV2} from "@layerzerolabs/lz-evm-oapp-v2/contracts/oapp/interfaces/IOAppCore.sol";
@@ -14,7 +13,7 @@ import {UlnConfig} from "@layerzerolabs/lz-evm-messagelib-v2/contracts/uln/UlnBa
 import {ExecutorConfig} from "@layerzerolabs/lz-evm-messagelib-v2/contracts/SendLibBase.sol";
 
 contract SendConfig is Script {
-   address constant LAYERZERO_ENDPOINT =
+    address constant LAYERZERO_ENDPOINT =
         0x6EDCE65403992e310A62460808c4b910D972f10f;
 
     uint32 public constant EXECUTOR_CONFIG_TYPE = 1;
@@ -32,23 +31,18 @@ contract SendConfig is Script {
         uint256 privateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(privateKey);
 
-        //=========set HBB SendConfig ==========
-        BeBopOFT HBB = BeBopOFT(HBB_CA);
+        //=========set SBB SendConfig ==========
+        BeBopOFT SBB = BeBopOFT(SBB_CA);
         ILayerZeroEndpointV2 endpoint = ILayerZeroEndpointV2(
-            address(HBB.endpoint())
+            address(SBB.endpoint())
         );
 
         SetConfigParam[] memory setConfigParams = new SetConfigParam[](2);
-      
-        address[] memory requiredDVNs = new address[](1);
-        requiredDVNs[0] = address(0x3E43f8ff0175580f7644DA043071c289DDf98118);
-     
-        address[] memory optionalDVNs;
 
         // ExecutorConfig  这个可以不该，只是链上执行合约的配置
         ExecutorConfig memory executorConfig = ExecutorConfig({
-            maxMessageSize:10000,
-            executor: address(0xBc0C24E6f24eC2F1fd7E859B8322A1277F80aaD5)
+            maxMessageSize: 10000,
+            executor: address(0x718B92b5CB0a5552039B593faF724D182A881eDA) //配置 sepolia test excute
         });
         setConfigParams[0] = SetConfigParam({
             eid: SEPOLIA_ENDPOINT_ID,
@@ -57,10 +51,19 @@ contract SendConfig is Script {
         });
         // ExecutorConfig
 
+        address[] memory requiredDVNs = new address[](2);
+        //!! 配置 sepolia test  LZ DVN
+        requiredDVNs[0] = address(0x8eebf8b423B73bFCa51a1Db4B7354AA0bFCA9193);
+
+        //!! 配置 sepolia test google cloud DVN
+        requiredDVNs[1] = address(0x4F675c48FaD936cb4c3cA07d7cBF421CeeAE0C75);
+
+        address[] memory optionalDVNs;
+
         // UlnConfig
         UlnConfig memory ulnConfig = UlnConfig({
-            confirmations: 1,
-            requiredDVNCount: 1,
+            confirmations: 5,
+            requiredDVNCount: 2,
             optionalDVNCount: 0,
             optionalDVNThreshold: 0,
             requiredDVNs: requiredDVNs,
@@ -68,20 +71,18 @@ contract SendConfig is Script {
         });
 
         setConfigParams[1] = SetConfigParam({
-            eid: SEPOLIA_ENDPOINT_ID,
+            eid: TBNB_ENDPOINT_ID, //!! 配置 目标链EID
             configType: ULN_CONFIG_TYPE,
             config: abi.encode(ulnConfig)
         });
 
         endpoint.setConfig(
-            address(HBB),
-            address(0x21F33EcF7F65D61f77e554B4B4380829908cD076),
+            address(SBB),
+            0xcc1ae8Cf5D3904Cef3360A9532B477529b177cCE, //!! 配置 sepolia sendUln302
             setConfigParams
         );
 
-        //=========set HBB SendConfig ==========
-
-
+        //=========set SBB SendConfig ==========
 
         vm.stopBroadcast();
     }

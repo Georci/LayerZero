@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import {Script, console} from "forge-std/Script.sol";
-
+//@layerzerolabs/lz-evm-oapp-v2/contracts/oft/interfaces/IOFT.sol
 import {IOFT, SendParam, OFTReceipt} from "@layerzerolabs/lz-evm-oapp-v2/contracts/oft/interfaces/IOFT.sol";
 import {IOAppCore} from "@layerzerolabs/lz-evm-oapp-v2/contracts/oapp/interfaces/IOAppCore.sol";
 import {MessagingFee} from "@layerzerolabs/lz-evm-oapp-v2/contracts/oft/OFTCore.sol";
@@ -12,9 +12,9 @@ import {BeBopOFT} from "../../src/BeBopOFT.sol";
 
 contract SendOFT is Script {
     using OptionsBuilder for bytes;
-    uint32 constant SEPOLIA_ENDPOINT_ID = 40161;
-
     uint32 constant HOLESKY_ENDPOINT_ID = 40217;
+    uint32 constant SEPOLIA_ENDPOINT_ID = 40161;
+    uint32 constant TBNB_ENDPOINT_ID = 40102;
     /**
      * @dev Converts an address to bytes32.
      * @param _addr The address to convert.
@@ -26,10 +26,10 @@ contract SendOFT is Script {
 
     function run() public {
         // Fetching environment variables
-           address oftAddress = vm.envAddress("HOLESKY_BEBOP_CA");
-        // address oftAddress = vm.envAddress("SEPOLIA_BEBOP_CA");
+        //    address oftAddress = vm.envAddress("HOLESKY_BEBOP_CA");// !!注意
+        address oftAddress = vm.envAddress("SEPOLIA_BEBOP_CA"); // !!注意
         address toAddress = vm.envAddress("TO_ADDRESS");
-        uint256 _tokensToSend = 2 ether;
+        uint256 _tokensToSend = 1 ether;
 
         // Fetch the private key from environment variable
         uint256 privateKey = vm.envUint("PRIVATE_KEY");
@@ -39,13 +39,17 @@ contract SendOFT is Script {
 
         BeBopOFT sourceOFT = BeBopOFT(oftAddress);
 
-        console.log("source_BEBOP_balance", sourceOFT.balanceOf(toAddress)/10 ** 18);
+        console.log(
+            "source_BEBOP_balance",
+            sourceOFT.balanceOf(toAddress) / 10 ** 18
+        );
 
         bytes memory _extraOptions = OptionsBuilder
             .newOptions()
-            .addExecutorLzReceiveOption(65000, 0);
+            .addExecutorLzReceiveOption(200000, 0);
+
         SendParam memory sendParam = SendParam(
-            SEPOLIA_ENDPOINT_ID, // You can also make this dynamic if needed
+            TBNB_ENDPOINT_ID, // !!注意
             addressToBytes32(toAddress),
             _tokensToSend,
             (_tokensToSend * 9) / 10,

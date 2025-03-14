@@ -12,9 +12,6 @@ contract BeBop_SetConfig is Script {
     address constant LAYERZERO_ENDPOINT =
         0x6EDCE65403992e310A62460808c4b910D972f10f;
 
-    uint32 public constant EXECUTOR_CONFIG_TYPE = 1;
-    uint32 public constant ULN_CONFIG_TYPE = 2;
-
     uint32 constant HOLESKY_ENDPOINT_ID = 40217;
     uint32 constant SEPOLIA_ENDPOINT_ID = 40161;
     uint32 constant TBNB_ENDPOINT_ID = 40102;
@@ -35,24 +32,20 @@ contract BeBop_SetConfig is Script {
         // );
         // HBB.mint(vm.addr(privateKey), 100 ether);
 
-        BeBopOFT SBB = BeBopOFT(SBB_CA);
-        SBB.setPeer(
-            HOLESKY_ENDPOINT_ID,
-            bytes32(uint256(uint160(HBB_CA)))
-        );
-
+        // BeBopOFT SBB = BeBopOFT(SBB_CA);
+        // SBB.setPeer(HOLESKY_ENDPOINT_ID, bytes32(uint256(uint160(HBB_CA))));
+        // SBB.mint(vm.addr(privateKey), 1 ether);
 
         // BeBopOFT SBB = BeBopOFT(SBB_CA);
         // SBB.setPeer(TBNB_ENDPOINT_ID, bytes32(uint256(uint160(TBB_CA))));
 
-        // BeBopOFT TBB = BeBopOFT(TBB_CA);
-        // TBB.setPeer(
-        //     SEPOLIA_ENDPOINT_ID,
-        //     bytes32(uint256(uint160(SBB_CA)))
-        // );
+        BeBopOFT TBB = BeBopOFT(TBB_CA);
+        TBB.setPeer(
+            SEPOLIA_ENDPOINT_ID,
+            bytes32(uint256(uint160(SBB_CA)))
+        );
         //=========set peers==========
 
-     
         vm.stopBroadcast();
     }
 }

@@ -12,35 +12,38 @@ import {UlnConfig} from "@layerzerolabs/lz-evm-messagelib-v2/contracts/uln/UlnBa
 import "../../src/BeBopOFT.sol";
 
 contract ReceiveConfig is Script {
- 
-
     uint32 public constant RECEIVE_CONFIG_TYPE = 2;
 
     uint32 constant HOLESKY_ENDPOINT_ID = 40217;
+    uint32 constant SEPOLIA_ENDPOINT_ID = 40161;
+    uint32 constant TBNB_ENDPOINT_ID = 40102;
 
     function run() external {
+        address TBB_CA = vm.envAddress("TBNB_BEBOP_CA");
 
-        address SBB_CA = vm.envAddress("SEPOLIA_BEBOP_CA");
-      
         uint256 privateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(privateKey);
 
-        BeBopOFT SBB = BeBopOFT(SBB_CA);
+        BeBopOFT TBB = BeBopOFT(TBB_CA);
 
         ILayerZeroEndpointV2 endpoint = ILayerZeroEndpointV2(
-            address(SBB.endpoint())
+            address(TBB.endpoint())
         );
 
         SetConfigParam[] memory setConfigParams = new SetConfigParam[](1);
 
-        address[] memory requiredDVNs = new address[](1);
-        requiredDVNs[0] = address(0x8eebf8b423B73bFCa51a1Db4B7354AA0bFCA9193);
+        address[] memory requiredDVNs = new address[](2);
+
+        requiredDVNs[0] = address(0x0eE552262f7B562eFcED6DD4A7e2878AB897d405);
+
+        //!! 配置 bnb test google cloud DVN
+        requiredDVNs[1] = address(0x6f99eA3Fc9206E2779249E15512D7248dAb0B52e);
 
         address[] memory optionalDVNs;
 
         UlnConfig memory ulnConfig = UlnConfig({
-            confirmations: 1,
-            requiredDVNCount: 1,
+            confirmations: 5,
+            requiredDVNCount: 2,
             optionalDVNCount: 0,
             optionalDVNThreshold: 0,
             requiredDVNs: requiredDVNs,
@@ -48,14 +51,14 @@ contract ReceiveConfig is Script {
         });
 
         setConfigParams[0] = SetConfigParam({
-            eid: HOLESKY_ENDPOINT_ID,
+            eid: SEPOLIA_ENDPOINT_ID, //!! 配置 源链EID
             configType: RECEIVE_CONFIG_TYPE,
             config: abi.encode(ulnConfig)
         });
 
         endpoint.setConfig(
-            address(SBB),
-            0xdAf00F5eE2158dD58E0d3857851c432E34A3A851,
+            address(TBB),
+            0x188d4bbCeD671A7aA2b5055937F79510A32e9683, //!! 配置 BNB_TEST receiveUln302
             setConfigParams
         );
         vm.stopBroadcast();
